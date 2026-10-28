@@ -51,7 +51,7 @@ write_pci_devices() {
 # "modules" as the second argument. mkinitcpio does not run under set -u, but
 # the config must survive it, so source under it anyway. "unset" leaves MODULES
 # undeclared entirely. The third argument swaps in another copy of the hook
-# config, whose directory holds the drop-ins sorting around it.
+# config; its directory stands in for the drop-in directory the config walks.
 resolved_hooks() {
   local modules_decl="" variable=HOOKS conf=${3:-$hooks_conf}
   [[ $1 == "unset" ]] || modules_decl="MODULES=($1)"
@@ -61,7 +61,7 @@ resolved_hooks() {
   # only KEYMAP; predefine XKBLAYOUT so its expansion survives set -u and the
   # test stays independent of the machine it runs on.
   OMARCHY_PCI_DEVICES_PATH="$tmp_dir/devices" OMARCHY_PROC_ROOT="$tmp_dir/generic/proc" \
-    PATH="$tmp_dir/generic/bin:$ROOT/bin:$PATH" bash -uc "
+    OMARCHY_MKINITCPIO_CONF_DIR="${conf%/*}" PATH="$tmp_dir/generic/bin:$ROOT/bin:$PATH" bash -uc "
     FILES=()
     XKBLAYOUT=us
     source '$baseline_conf'

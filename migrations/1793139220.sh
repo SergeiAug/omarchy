@@ -23,8 +23,9 @@ omarchy-cmd-present limine-mkinitcpio || exit 0
 [[ ! -e $rebuild_marker ]] || exit 0
 
 # Include the baseline when installed, then the hardware and filter drop-ins.
-# Skip conservatively if evaluation fails.
-modules=$(bash -c 'if [[ -f $1 ]]; then source "$1" || exit 1; fi; source "$2" && source "$3" && echo " ${MODULES[*]} "' -- "$baseline_conf" "$nvidia_conf" "$hooks_conf") || exit 0
+# A config that fails to evaluate leaves the migration pending, so it retries
+# once the config is fixed.
+modules=$(OMARCHY_MKINITCPIO_CONF_DIR="${hooks_conf%/*}" bash -c 'if [[ -f $1 ]]; then source "$1" || exit 1; fi; source "$2" && source "$3" && echo " ${MODULES[*]} "' -- "$baseline_conf" "$nvidia_conf" "$hooks_conf") || exit 1
 
 [[ $modules != *" nvidia_drm "* ]] || exit 0
 
